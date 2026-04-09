@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Leitor de Livros</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eaf4ff;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 350px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2b7cff;
+    }
+
+    input, button, textarea {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #2b7cff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1a5edb;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #reader {
+      height: 150px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container" id="auth">
+  <h2>Login</h2>
+  <input id="username" placeholder="Usuário">
+  <input id="password" type="password" placeholder="Senha">
+  <button onclick="register()">Cadastrar</button>
+  <button onclick="login()">Entrar</button>
+</div>
+
+<div class="container hidden" id="app">
+  <h2>Biblioteca</h2>
+
+  <textarea id="bookInput" placeholder="Cole um livro aqui..."></textarea>
+  <button onclick="saveBook()">Salvar Livro</button>
+
+  <select id="bookList"></select>
+  <button onclick="loadBook()">Ler Livro</button>
+
+  <textarea id="reader"></textarea>
+  <button onclick="speak()">🔊 Ouvir Livro</button>
+</div>
+
+<script>
+let currentUser = null;
+
+function register() {
+  const user = username.value;
+  const pass = password.value;
+
+  if (!user || !pass) {
+    alert("Preenche tudo!");
+    return;
+  }
+
+  localStorage.setItem(user, JSON.stringify({password: pass, books: []}));
+  alert("Conta criada!");
+}
+
+function login() {
+  const user = username.value;
+  const pass = password.value;
+
+  const data = JSON.parse(localStorage.getItem(user));
+
+  if (!data || data.password !== pass) {
+    alert("Login inválido!");
+    return;
+  }
+
+  currentUser = user;
+  auth.classList.add("hidden");
+  app.classList.remove("hidden");
+
+  updateBooks();
+}
+
+function saveBook() {
+  const text = bookInput.value;
+  if (!text) return;
+
+  let data = JSON.parse(localStorage.getItem(currentUser));
+  data.books.push(text);
+
+  localStorage.setItem(currentUser, JSON.stringify(data));
+  bookInput.value = "";
+
+  updateBooks();
+}
+
+function updateBooks() {
+  const data = JSON.parse(localStorage.getItem(currentUser));
+  bookList.innerHTML = "";
+
+  data.books.forEach((b, i) => {
+    let opt = document.createElement("option");
+    opt.value = i;
+    opt.text = "Livro " + (i+1);
+    bookList.appendChild(opt);
+  });
+}
+
+function loadBook() {
+  const data = JSON.parse(localStorage.getItem(currentUser));
+  reader.value = data.books[bookList.value];
+}
+
+function speak() {
+  const text = reader.value;
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "pt-BR";
+  speechSynthesis.speak(speech);
+}
+</script>
+
+</body>
+</html>
